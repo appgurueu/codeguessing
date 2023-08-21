@@ -1,0 +1,272 @@
+{
+	FALSE self-interpreter.
+
+	Takes a FALSE program as input, followed by `<` as a delimiter, followed by program input.
+	If there is no program input, the `<` delimiter can be omitted.
+	Expects ASCII: B rather than ß and O rather than ø.
+
+	Written by Lars Müller (https://github.com/appgurueu)
+	for round 41 of code guessing (https://cg.esolangs.gay/41/).
+	Licensed under the MIT license.
+	
+
+	Heavily uses variables as to not interfere with what it's doing on the stack
+	(splicing the stack, emitting bytecode on the stack or using the stack as the interpreter stack).
+
+	Some FALSE operations will have linear time complexity in the size of the stack in this interpreter.
+	That is, polynomial vs. superpolynomial time is preserved, but programs may get a linear time complexity factor.
+}
+
+{
+	shove/splice (s):
+	pop n elements,
+	then call f to mutate the stack,
+	then restore the popped elements
+
+	invocation: [...]f: 42n: 32m: s;!
+}
+[
+	n;0=
+	$[% f;! 0~]?
+	~[
+		m;0=
+		$[
+			% {kill cond}
+			% {kill a zero on stack}
+			n; 1- n:
+			32 m:
+			s;!
+			0 {this is to be left on the stack}
+			0~ {this will be killed (cond)}
+		]?
+		~[
+			m; 1- m:
+			$ 1& {extract lowest bit}
+			\ 2/ \ {>> 1 thing on stack}
+			$[
+				% s;! 2* 1| 0~
+			]?
+			~[
+				s;! 2*
+			]?
+		]?
+	]?
+]s:
+
+{
+	Compiler.
+	Leaves bytecode on stack.
+	Uses`<` to delimit program and input.
+}
+
+0l: {bytecode length}
+0t: 0n: {state t: 0 = default, 1 = number; n holds the numerical value of the number}
+[^c: c;'<= c;1_= | ~] {loop until `<` or EOF is encountered}
+[
+	1h: {to handle? set to 0 if handled}
+	'0c;> c;'9> | ~[
+		c; '0- n; 10* + n: {add digit to numerical value}
+		1t: {we have a number now}
+		0h:
+	]?
+	h;[
+		t;['P n; l;2+l:]? {emit a num push if necessary}
+		0t: 0n: {reset state to "not a number, numerical value 0"}
+	]?
+	{variables}
+	'ac;> c;'z> | ~[
+		'P c;'a-
+		l;2+l:
+		0h:
+	]?
+	{character literals}
+	c;''=[
+		'P ^ {pls don't EOF here oki?}
+		l;2+l:
+		0h:	
+	]?
+	{whitespace}
+	c;32{space}= c;9{tab}= c;10{newline}= ||[
+		0h: {ignore whitespace; don't push it}	
+	]?
+	{comments}
+	c;'{=[
+		[^'}=~][]#
+		0h:
+	]?
+	{string literals}
+	c;'"=[
+		[^$'"=~][
+			{push char, then write char}
+			'P \ ',
+			l;3+l:
+		]#
+		% {murder the closing "}
+		0h:
+	]?
+	{lambdas}
+	c;'[=[
+		'J 55555 {jump, address is to be replaced}
+		l;2+l:
+		{NOTE: we can reuse n here since it was already emitted}
+		[l;]f: l;n: 32m: s;! {push start address of function on stack}
+		0h:
+	]?
+	c;']=[
+		{TODO (...) check balance}
+		[q:]f: l;n: 32m: s;! {this should pop the top of the funcinfo stack, which starts right under the bytecode}
+		'R l;1+l: {emit return}
+		l;q; - n: {this is the length of the function - how many things to skip until we can edit the jump address before the function}
+		[% l;]f: 32m: s;! {replace jump address}
+		'P q; {return, push lambda}
+		l;2+l:
+		0h:
+	]?
+	c;'#=[
+		'S 'T 'L
+		l;3+l:
+		0h:
+	]?
+	{TODO (...) reject invalid characters}
+	h;[
+		c;
+		l;1+l:
+	]?
+]#
+
+t;['P n; l;2+l:]? {deal with a trailing number (not that it would matter)}
+
+'E {mark end of bytecode}
+
+{
+	Interpreter.
+	Does everything on the stack.
+	Stack layout: Bytecode, call stack, variables, working stack.
+}
+
+l; b: {base of the stack (start of bytecode) relative to the top}
+l; c: {top of the call stack, relative to base}
+{variables come after the call stack (c+x); push 26 var slots}
+0 i:
+[i;26=~][
+	123456 {for easier debugging}
+	i;1+i:
+]#
+b;26+b:
+0 i: {program counter relative to b}
+[b;i;-O 'E =~] {loop until sentinel is reached}
+[
+	b;i;-O {fetch instruction}
+	$'P=[% i;1+i: b;i;-O b;1+b: 'E]? {push 'P <value>}
+	{variables}
+	$';=[%
+		{take something from the stack as offset to add to c, then use as index}
+		b;c;-\- 2-{1- for what we just popped, another 1- because it is in ':} O
+		{-1+1=0}
+	'E]?
+	$':=[%
+		{stack: val regno}
+		\ v: {save val}
+		b;2-b:
+		b;c;- \ - 1- n: {n = b - c - regno - 1}
+		[% v;]f: 32m: s;! {replace variable on stack}
+	'E]?
+	{control flow}
+	{jump 'J <address>}
+	$'J=[%
+		i;1+i:
+		b;i;-O
+		1-{to undo later 1+}i: {set PC}
+	'E]?
+	{pop and call}
+	$'!=[%
+		g: {pop & remember function to call}
+		[i;1+]f: b;c;- n: 32m: s;! {push next pc to call stack}
+		c;1+c:
+		g;1-{to undo later 1+}i: {set PC}
+		{-1+1=0}
+	'E]?
+	{conditional call}
+	$'?=[%
+		b;2-b: {will pop two things}
+		g: {remember func addr.}
+		[
+			{push to call stack}
+			[i;1+]f: b;1+{pretend it was one larger (cmp with '! to see why)}c;- n: 32m: s;!
+			c;1+c:
+			g;1-{to undo later 1+}i: {set pc}
+			b;1+b: {pushed one thing on call stack}
+		]? {this pops!}
+	'E]?
+	{loop setup}
+	$'S=[%
+		g: o: {remember func addr.}
+		{push condition & body lambdas on the call stack}
+		[g;o;]f: b;2-c;- n:
+		32m: s;!
+		c;2+c:
+		{no need to adjust base; all we did was move two things from stack to call stack}
+	'E]?
+	{loop test}
+	$'T=[%
+		b;c;- O
+		{this is just the code for a call of `g`}
+		g:
+		[i;1+]f: b;1+c;- n: 32m: s;!
+		c;1+c:
+		g;1-i:
+		b;1+b: {pushed addr to call stack, popped nothing (cond remains on call stack)}
+	'E]?
+	{loop looping}
+	$'L=[%
+		b;1-b: w:
+		w;[
+			b;c;-1+{body lies one deeper than cond} O
+			{this is just the code for a call of `g`}
+			g:
+			[i;1-{sneaky one: go back to T instr}]f: b;1+c;- n: 32m: s;!
+			c;1+c:
+			g;1-i:
+			b;1+b:
+		]?
+		w;0=[
+			{clean up call stack: drop cond and body}
+			[%%]f: b;c;- n: 32m: s;!
+			c;2-c:
+			b;2-b:
+		]?
+	'E]?
+	{return}
+	$'R=[%
+		c;1-c:
+		{pop from call stack}
+		[
+			1-{to undo later 1+}i:
+		]f: b;c;-n: 32m: s;!
+		b;1-b:
+	'E]?
+	{binops}
+	$'+=[% + b;1-b: 'E]?
+	$'-=[% - b;1-b: 'E]?
+	$'*=[% * b;1-b: 'E]?
+	$'/=[% / b;1-b: 'E]?
+	$'&=[% & b;1-b: 'E]?
+	$'|=[% | b;1-b: 'E]?
+	$'>=[% > b;1-b: 'E]?
+	$'==[% = b;1-b: 'E]?
+	{unops}
+	$'~=[% ~ 'E]?
+	$'_=[% _ 'E]?
+	{stack ops; these are funky}
+	$'\=[% \ 'E]?
+	$'@=[% @ 'E]?
+	$'%=[% % b;1-b: 'E]?
+	$'$=[% $ b;1+b: 'E]?
+	$'O=[% O {+1-1} 'E]?
+	{I/O; compiler needs to handle "..."}
+	$'B=[% B 'E]?
+	$'^=[% ^ b;1+b: 'E]?
+	$',=[% , b;1-b: 'E]?
+	'.=[. B b;1-b:]?
+	i;1+i:
+]#
