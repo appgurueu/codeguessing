@@ -7,3 +7,4 @@ Rounds:
 * 40: [15 puzzle solver app](https://github.com/appgurueu/15) in Dart & Flutter. Zip archive of the repo as submitted.
 * 41: FALSE bytecode interpreter in Zig, FALSE self-interpreter.
 * 42: 2048 in the terminal in Rust.
+* 43: Spirograph drawing in Lua using LÖVE. May contain traces of tomfoolery.
