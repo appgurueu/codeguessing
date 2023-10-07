@@ -8,3 +8,4 @@ Rounds:
 * 41: FALSE bytecode interpreter in Zig, FALSE self-interpreter.
 * 42: 2048 in the terminal in Rust.
 * 43: Spirograph drawing in Lua using LÖVE. May contain traces of tomfoolery.
+* 44: Countdown solver in Python.
