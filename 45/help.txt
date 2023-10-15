@@ -1,0 +1,2 @@
+Compile bot (or client): nim compile -d:release bot
+Use client: ./client bot

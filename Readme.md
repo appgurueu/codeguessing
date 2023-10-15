@@ -9,3 +9,4 @@ Rounds:
 * 42: 2048 in the terminal in Rust.
 * 43: Spirograph drawing in Lua using LÖVE. May contain traces of tomfoolery.
 * 44: Countdown solver in Python.
+* 45: Connect Four bot and TUI in Nim.
