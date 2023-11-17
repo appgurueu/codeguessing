@@ -19,3 +19,5 @@ Rounds:
 	  and constructing the list for the next step from it.
 	  Rudimentary input using e.g. the example input
 	  did unfortunately not reveal this.
+* 47: Longest increasing subsequence finding in Groovy.
+      I am quite proud of the algorithm I conceived here.
