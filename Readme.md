@@ -21,3 +21,4 @@ Rounds:
 	  did unfortunately not reveal this.
 * 47: Longest increasing subsequence finding in Groovy.
       I am quite proud of the algorithm I conceived here.
+* 48: Finding an evenly spaced needle in a haystack in TypeScript.

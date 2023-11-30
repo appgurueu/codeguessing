@@ -1,0 +1,1 @@
+export function entry(h:string,n:string):[number,number]|null{for(let g=1;n.length*g<=h.length;++g){const m=RegExp(n.split('').map(c=>(/[.*+?^${}()|[\]\\]/.test(c)?'\\':'')+c).join(`.{${g-1}}`)).exec(h);if(m)return[m.index,--g]}return null}// dis  onli wroks on WIDE CHARS because YES
