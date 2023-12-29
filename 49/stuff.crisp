@@ -1,0 +1,62 @@
+# she bangs
+# (all lines starting with # actually) are ignored
+
+# run this using "racket crisp.rkt stuff.crisp"
+
+# d is a debug print for a list of arguments
+(d 1 2 3)
+# (ib) reads a byte, (ob b) writes a byte
+(ob 65)
+# (d (ib))
+# basic math works; - is unary; +, * are strictly binary, fold them yourself
+(d (+ (+ (* 4 5) (* 2 3)) (- 1)))
+# lambdas (single parameter only)
+(d ((\ x (\ y (+ x y))) 1 2))
+# you can quote stuff, albeit unusually
+(d (' + 1 2))
+# automatic currying
+(d (+ 1))
+(d 42)
+(d ((+ 1) 2))
+(d 69)
+# "thunks" (paramless lambdas)
+(d ((\\ (+ 1 2))))
+# we've got cons, car, cdr, list
+(d (cons 1 2))
+(d (car (cons 1 2)))
+(d (cdr (cons 1 2)))
+(d (')) # empty list
+(d (cons 1 ('))) # list with one elem
+(d (list 1 2 3))
+# bools are just functions
+(d (t 1 0))
+(d (f 1 0))
+(d (<= 1 2))
+(d ((<= 1 2) 1 0))
+# <= is special: it compares lexicographically and can be used to test for nil
+(d ((<= (') (')) 1 0))
+(d ((<= (') (' 1 2)) 1 0))
+(d ((<= (' 1 2) (')) 1 0))
+(d ((<= (' 1 2) (' 1 2)) 1 0))
+# this is enough for a simple recursive fibonacci already
+(d ((\ f (f f 10))
+	(\ f (\ n (((<= n 1)
+		(\\ n)
+		(\\ (+ (f f (+ n (- 1))) (f f (+ n (- 2)))))))))))
+# multiple things are awkward here:
+# - nesting of lambdas
+# - no let(rec)
+# - thunks
+# it's time to introduce "macros". macros are like functions,
+# except they operate on the raw sexprs rather than the evaluated sexprs.
+# $ is like \, but the parameter is always called ... and is implicit.
+# "macro" "expansion" happens at runtime.
+(d (($ (car ...)) 1 2 3))
+(($ (d (list (car (' d)) ...)) (cons (car (' d)) ...)) 1 2 3)
+(($ ...
+	(list (list
+		(car ...)
+		(list (car (' \\)) (car (cdr ...)))
+		(list (car (' \\)) (car (cdr (cdr ...)))))))
+	t (d 1) (d 0))
+# macros to solve the other problems are left as exercises to the reader
