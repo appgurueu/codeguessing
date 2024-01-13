@@ -23,3 +23,4 @@ Rounds:
       I am quite proud of the algorithm I conceived here.
 * 48: Finding an evenly spaced needle in a haystack in TypeScript.
 * 49: A weird, minimalistic Lisp written in Racket.
+* 50: Silly Markov chain in Java.
