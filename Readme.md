@@ -25,3 +25,4 @@ Rounds:
 * 49: A weird, minimalistic Lisp written in Racket.
 * 50: Silly Markov chain in Java.
 * 51: Turing Machine to find the length of a string, implemented in C.
+* 52: Two infinite Thue-Morse sequence generators in Haskell.
