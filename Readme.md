@@ -1,4 +1,5 @@
-[Code Guessing](https://cg.esolangs.gay/) submissions, licensed under the MIT license.
+[Code Guessing](https://cg.esolangs.gay/) submissions,
+licensed under the MIT license except where otherwise noted.
 
 Rounds:
 
@@ -26,4 +27,8 @@ Rounds:
 * 50: Silly Markov chain in Java.
 * 51: Turing Machine to find the length of a string, implemented in C.
 * 52: Two infinite Thue-Morse sequence generators in Haskell.
-* 53: The pinnacle of clean coding practices, written in PHP as appropriate.
+* 53: The pinnacle of clean coding practices to validate a box drawing,
+      written in PHP as appropriate.
+* 54: A very basic raytracer in Go which renders a skinned Stanford bunny.
+	* Note: The Stanford bunny (`bnuuy.obj`) is not licensed freely,
+	  but is available for noncommercial use. See `bnuuy.obj` for details.
