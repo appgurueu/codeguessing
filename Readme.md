@@ -32,3 +32,5 @@ Rounds:
 * 54: A very basic raytracer in Go which renders a skinned Stanford bunny.
 	* Note: The Stanford bunny (`bnuuy.obj`) is not licensed freely,
 	  but is available for noncommercial use. See `bnuuy.obj` for details.
+* 55: Deciding whether a game of Trax has concluded or not in Python.
+	* Intended to be hard to guess. Deliberately left unoptimized for that reason.
