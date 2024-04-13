@@ -34,3 +34,8 @@ Rounds:
 	  but is available for noncommercial use. See `bnuuy.obj` for details.
 * 55: Deciding whether a game of Trax has concluded or not in Python.
 	* Intended to be hard to guess. Deliberately left unoptimized for that reason.
+* 56: Generating a string which is matched by a regex using Zig.
+	* Linear time implementation, roughly in PDA style. Very fast.
+	  Excessively imperative, but also not bounded by the call stack limit
+	  (as a recursive descent parser would be).
+	* "Shotgun" parser: Does not generate an intermediate AST.
